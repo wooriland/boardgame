@@ -1,4 +1,6 @@
-/* 기본 리셋 */
+/* =========================
+   기본 리셋
+   ========================= */
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 
@@ -9,15 +11,17 @@ body {
   overflow-x: hidden;
 }
 
-/* 배경 레이어 */
+/* =========================
+   배경 레이어(포스터)
+   ========================= */
 .bg {
   position: fixed;
   inset: 0;
   background-image: url("../assets/poster.png");
-  background-size: contain;       /* ✅ 포스터 전체 보이기 */
+  background-size: contain;         /* 포스터 전체 보이기 */
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #000;         /* ✅ 남는 여백 색 처리 */
+  background-color: #000;           /* 남는 여백 색 */
   z-index: -2;
 }
 
@@ -26,31 +30,35 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.35);   /* ✅ 조금 덜 어둡게(원하면 0.45로) */
+  background: rgba(0,0,0,0.35);     /* 필요하면 0.45로 올려도 됨 */
   z-index: -1;
 }
 
-/* 콘텐츠 레이아웃 */
+/* =========================
+   콘텐츠 레이아웃
+   ========================= */
 .wrap {
-  min-height: 100vh;              /* ✅ 화면 높이 기준 */
+  min-height: 100vh;
   display: grid;
-  grid-template-rows: 1fr auto;   /* ✅ card 영역(1fr), footer(auto) */
+  grid-template-rows: 1fr auto;
   padding: 32px 16px;
 
-  max-width: 600px;               /* ✅ 원하던 폭 */
-  width: 100%;                    /* ✅ 모바일 대응 */
-  margin: 0 auto;                 /* ✅ 중앙 정렬 */
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-/* 카드 */
+/* =========================
+   카드
+   ========================= */
 .card {
-  align-self: center;             /* ✅ 세로 중앙 */
-  justify-self: center;           /* ✅ 가로 중앙 */
+  align-self: center;
+  justify-self: center;
 
   width: 100%;
-  max-width: 560px;               /* ✅ 카드 자체는 약간 더 좁게(원하면 600) */
+  max-width: 560px;
 
-  transform: translateY(150px);   /* ✅ 카드만 아래로 이동 (원하는 만큼 조절) */
+  transform: translateY(150px);
 
   background: rgba(0,0,0,0.50);
   border: 1px solid rgba(255,255,255,0.15);
@@ -59,8 +67,17 @@ body {
   backdrop-filter: blur(6px);
 }
 
-.card-title { margin: 0 0 10px; font-size: 18px; }
-.list { margin: 0; padding-left: 18px; line-height: 1.7; opacity: 0.95; }
+.card-title {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.7;
+  opacity: 0.95;
+}
 
 .actions {
   display: flex;
@@ -69,18 +86,168 @@ body {
   flex-wrap: wrap;
 }
 
+/* =========================
+   버튼(공통)
+   ========================= */
 .btn {
   display: inline-block;
   padding: 10px 14px;
   border-radius: 12px;
   text-decoration: none;
+  cursor: pointer;
+
   color: #fff;
   background: rgba(255,255,255,0.18);
   border: 1px solid rgba(255,255,255,0.25);
 }
 
-.btn:hover { background: rgba(255,255,255,0.28); }
+.btn:hover {
+  background: rgba(255,255,255,0.28);
+}
 
-.btn.ghost { background: transparent; }
+.btn.ghost {
+  background: transparent;
+}
 
-.footer { padding: 10px 4px; opacity: 0.8; }
+.footer {
+  padding: 10px 4px;
+  opacity: 0.8;
+}
+
+/* =========================
+   참여 신청 모달 UI
+   ========================= */
+
+/* 모달 전체 컨테이너(기본 숨김) */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;              /* JS로 열 때 flex로 바꿈 */
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+
+  /* ✅ 모달이 열렸을 때 내부 콘텐츠가 길어지면 스크롤 가능 */
+  padding: 18px 12px;
+}
+
+/* 모달 배경(어두운 딤) */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.62);
+}
+
+/* 모달 카드 */
+.modal-card {
+  position: relative;
+
+  /* ✅ 모바일에서도 잘 보이게 */
+  width: min(520px, 100%);
+  max-height: calc(100vh - 36px);
+
+  /* ✅ 내용이 길어지면 카드 내부 스크롤 */
+  overflow: auto;
+
+  background: rgba(0,0,0,0.82);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 16px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+
+  /* ✅ 딤 위에서 더 또렷하게 */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+
+.modal-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+/* 경고 메시지 */
+.modal-warning {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 80, 80, 0.18);
+  border: 1px solid rgba(255, 80, 80, 0.35);
+}
+
+/* 폼 필드 */
+.field {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+.field-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  border: 1px solid rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  outline: none;
+}
+
+.field-input:focus {
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.10);
+}
+
+/* 셀렉트 기본 스타일 보정(브라우저별 차이 줄임) */
+select.field-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* 오른쪽 화살표 공간 */
+  padding-right: 34px;
+
+  /* 간단한 화살표 느낌(텍스트로) */
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.7) 50%),
+    linear-gradient(135deg, rgba(255,255,255,0.7) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% + 1px),
+    calc(100% - 11px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* ✅ 드롭다운(옵션) 글자색 문제 해결 */
+select.field-input option {
+  color: #000;          /* 옵션 글자색(검정) */
+  background: #fff;     /* 옵션 배경색(흰색) */
+}
+
+/* 모달 버튼 영역 */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+/* ✅ 버튼이 <button>일 때 기본 스타일 리셋 */
+button.btn {
+  font: inherit;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* =========================
+   반응형(모바일) 보정
+   ========================= */
+@media (max-width: 420px) {
+  .card { transform: translateY(110px); }
+  .modal-card { padding: 14px; }
+  .btn { width: 100%; text-align: center; }
+  .modal-actions { flex-direction: column; }
+}
