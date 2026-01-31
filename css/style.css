@@ -1,0 +1,86 @@
+/* 기본 리셋 */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* 배경 레이어 */
+.bg {
+  position: fixed;
+  inset: 0;
+  background-image: url("../assets/poster.png");
+  background-size: contain;       /* ✅ 포스터 전체 보이기 */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000;         /* ✅ 남는 여백 색 처리 */
+  z-index: -2;
+}
+
+/* 가독성용 어두운 오버레이 */
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);   /* ✅ 조금 덜 어둡게(원하면 0.45로) */
+  z-index: -1;
+}
+
+/* 콘텐츠 레이아웃 */
+.wrap {
+  min-height: 100vh;              /* ✅ 화면 높이 기준 */
+  display: grid;
+  grid-template-rows: 1fr auto;   /* ✅ card 영역(1fr), footer(auto) */
+  padding: 32px 16px;
+
+  max-width: 600px;               /* ✅ 원하던 폭 */
+  width: 100%;                    /* ✅ 모바일 대응 */
+  margin: 0 auto;                 /* ✅ 중앙 정렬 */
+}
+
+/* 카드 */
+.card {
+  align-self: center;             /* ✅ 세로 중앙 */
+  justify-self: center;           /* ✅ 가로 중앙 */
+
+  width: 100%;
+  max-width: 560px;               /* ✅ 카드 자체는 약간 더 좁게(원하면 600) */
+
+  transform: translateY(150px);   /* ✅ 카드만 아래로 이동 (원하는 만큼 조절) */
+
+  background: rgba(0,0,0,0.50);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 18px 16px;
+  backdrop-filter: blur(6px);
+}
+
+.card-title { margin: 0 0 10px; font-size: 18px; }
+.list { margin: 0; padding-left: 18px; line-height: 1.7; opacity: 0.95; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #fff;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.btn:hover { background: rgba(255,255,255,0.28); }
+
+.btn.ghost { background: transparent; }
+
+.footer { padding: 10px 4px; opacity: 0.8; }
