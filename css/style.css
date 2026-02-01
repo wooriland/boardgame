@@ -25,14 +25,14 @@ body {
   z-index: -2;
 }
 
-/* 가독성용 어두운 오버레이 */
+/* 가독성용 어두운 오버레이
 .bg::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.35);     /* 필요하면 0.45로 올려도 됨 */
+  background: rgba(0,0,0,0.35);
   z-index: -1;
-}
+} */
 
 /* =========================
    콘텐츠 레이아웃
