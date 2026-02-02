@@ -6,77 +6,154 @@
   <title>보드게임 동아리</title>
   <link rel="stylesheet" href="./css/style.css" />
 </head>
+
 <body>
-  <!-- 배경(포스터) 위에 내용이 올라가는 구조 -->
+  <!-- ✅ 배경(포스터) -->
   <div class="bg" aria-hidden="true"></div>
-  <!--
-  <main class="wrap">
-    <section class="card">
-      <h2 class="card-title">모임 안내</h2>
-      <ul class="list">
-        <li>일정: 매주 토요일 1시</li>
-        <li>장소: 드림센터 1011호</li>
-        <li>대상: 누구나</li>
-      </ul>
 
-      <div class="actions">
-        <a class="btn" href="#" id="joinBtn">참여 신청</a>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <small>© 우리랜드</small>
-    </footer>
+  <!-- ✅ 화면 위 콘텐츠가 더 생기더라도 footer가 가리지 않게 여유 공간 확보 -->
+  <main class="wrap" aria-label="보드게임 동아리 메인">
+    <!-- 지금은 포스터가 메인이므로 비워둬도 됨 -->
+    <!-- 추후: 공지 카드/이번주 일정 등 이 영역에 자유롭게 추가 가능 -->
   </main>
-  -->
-    <!-- ✅ 참여 신청 모달(처음엔 숨김) -->
-  <div class="modal" id="joinModal" aria-hidden="true">
+
+  <!-- =========================
+       ✅ 하단 고정 Footer 메뉴
+       - [동아리 소개] [금주의 보드게임] [참여신청]
+       - 버튼 클릭 → 동일한 카드 팝업(모달) 열기
+       ========================= -->
+  <footer class="footer-nav" aria-label="하단 메뉴">
+    <!--
+      data-modal="intro|weekly|join"
+      JS에서 이 값을 읽어서 어떤 내용을 보여줄지 결정한다.
+    -->
+    <button type="button" class="footer-btn" data-modal="intro">동아리 소개</button>
+    <button type="button" class="footer-btn" data-modal="weekly">금주의 보드게임</button>
+    <button type="button" class="footer-btn primary" data-modal="join">참여신청</button>
+  </footer>
+
+
+  <!-- =========================
+       ✅ 공용 모달(하나로 통합)
+       - 3개 메뉴가 모두 "같은 카드 UI"를 공유
+       - 안쪽 내용만 바꿔서 보여준다.
+       ========================= -->
+  <div class="modal" id="mainModal" aria-hidden="true">
+    <!-- ✅ dim(배경 클릭 시 닫기) -->
     <div class="modal-backdrop" id="modalBackdrop"></div>
 
+    <!-- ✅ 실제 카드 -->
     <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <h3 class="modal-title" id="modalTitle">참여 신청</h3>
+      <!-- ✅ 제목은 JS에서 상황에 맞게 변경 -->
+      <h3 class="modal-title" id="modalTitle">제목</h3>
 
-      <!-- 경고 메시지 영역 -->
+      <!-- ✅ 공용 안내/경고 메시지(주로 참여신청 검증에서 사용) -->
       <p class="modal-warning" id="modalWarning" style="display:none;">
         모두 적으셔야 합니다.
       </p>
 
-      <form id="joinForm">
-        <label class="field">
-          <span class="field-label">소속부서</span>
-          <select id="deptSelect" class="field-input" required>
-            <option value="">선택하세요</option>
-            <option value="1청년부">1청년부</option>
-            <option value="2청년부">2청년부</option>
-            <option value="3청년부">3청년부</option>
-            <option value="4청년부">4청년부</option>
-            <option value="그 외">그 외</option>
-          </select>
-        </label>
+      <!-- =====================================================
+           1) 동아리 소개 뷰 (확인 버튼만 있음)
+           ===================================================== -->
+      <section id="viewIntro" class="modal-view" hidden>
+        <p class="modal-text">
+          우리랜드는 3청에서 시작한 보드게임 동아리 입니다.<br/>
+          지금은 중앙동아리의 지원으로 모든 청년이 참여할 수 있습니다.
+        </p>
 
-        <!-- ✅ '그 외' 선택시에만 표시 -->
-        <label class="field" id="deptEtcField" style="display:none;">
-          <span class="field-label">소속부서(직접입력)</span>
-          <input id="deptEtcInput" class="field-input" type="text" placeholder="예: 신혼다락방" />
-        </label>
+        <p class="modal-text">
+          우리랜드는 함께 모여 보드게임을 즐기며<br/> 친목을 다지는 모임입니다.<br/>
+          초보자도 쉽게 참여할 수 있도록 룰 설명과 진행을 도와드립니다.
+        </p>
 
-        <label class="field">
-          <span class="field-label">이름</span>
-          <input id="nameInput" class="field-input" type="text" placeholder="홍길동" required />
-        </label>
-
-        <label class="field">
-          <span class="field-label">연락처</span>
-          <input id="phoneInput" class="field-input" type="tel" inputmode="numeric" placeholder="01012345678" required />
-        </label>
+        <ul class="modal-list">
+          <li>정기 모임: 매주 토요일 13:00</li>
+          <li>장소: 드림센터 1011호</li>
+          <li>대상: 누구나</li>
+        </ul>
 
         <div class="modal-actions">
-          <button type="button" class="btn ghost" id="cancelBtn">취소</button>
-          <button type="submit" class="btn" id="submitBtn">참여</button>
+          <!-- ✅ 소개/금주게임은 "확인"만 누르면 닫힘 -->
+          <button type="button" class="btn" data-action="close">확인</button>
         </div>
-      </form>
+      </section>
+
+      <!-- =====================================================
+           2) 금주의 보드게임 뷰 (확인 버튼만 있음)
+           ===================================================== -->
+      <section id="viewWeekly" class="modal-view" hidden>
+        <p class="modal-text">
+          이번 주 추천 보드게임입니다!<br/>
+          (추후 서버/데이터 연동해서 자동 업데이트 가능)
+        </p>
+
+        <div class="weekly-cards">
+          <article class="mini-card">
+            <h4 class="mini-card-title">스플렌더</h4>
+            <p class="mini-card-desc">가볍게 시작하기 좋은 엔진빌딩/세트컬렉션 게임</p>
+          </article>
+
+          <article class="mini-card">
+            <h4 class="mini-card-title">카탄</h4>
+            <p class="mini-card-desc">자원 교환과 전략이 재미있는 대표적인 보드게임</p>
+          </article>
+
+          <article class="mini-card">
+            <h4 class="mini-card-title">아발론</h4>
+            <p class="mini-card-desc">대화와 추리가 핵심인 팀 기반 마피아류 게임</p>
+          </article>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn" data-action="close">확인</button>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           3) 참여 신청 뷰 (기존 구현 유지)
+           - 취소/참여 버튼
+           - 검증 로직 / '그 외' 입력 로직 / 서버 POST 그대로 활용
+           ===================================================== -->
+      <section id="viewJoin" class="modal-view" hidden>
+        <form id="joinForm">
+          <label class="field">
+            <span class="field-label">소속부서</span>
+            <select id="deptSelect" class="field-input" required>
+              <option value="">선택하세요</option>
+              <option value="1청년부">1청년부</option>
+              <option value="2청년부">2청년부</option>
+              <option value="3청년부">3청년부</option>
+              <option value="4청년부">4청년부</option>
+              <option value="그 외">그 외</option>
+            </select>
+          </label>
+
+          <!-- ✅ '그 외' 선택시에만 표시 -->
+          <label class="field" id="deptEtcField" style="display:none;">
+            <span class="field-label">소속부서(직접입력)</span>
+            <input id="deptEtcInput" class="field-input" type="text" placeholder="예: 신혼다락방" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">이름</span>
+            <input id="nameInput" class="field-input" type="text" placeholder="홍길동" required />
+          </label>
+
+          <label class="field">
+            <span class="field-label">연락처</span>
+            <input id="phoneInput" class="field-input" type="tel" inputmode="numeric" placeholder="01012345678" required />
+          </label>
+
+          <div class="modal-actions">
+            <button type="button" class="btn ghost" id="cancelBtn">취소</button>
+            <button type="submit" class="btn" id="submitBtn">참여</button>
+          </div>
+        </form>
+      </section>
+
     </div>
   </div>
+
   <script src="./js/app.js"></script>
 </body>
 </html>

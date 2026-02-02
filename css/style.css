@@ -9,6 +9,10 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
   color: #fff;
   overflow-x: hidden;
+
+  /* ✅ 하단 고정 footer가 컨텐츠를 가리지 않게
+     최소한 footer 높이만큼 바닥 여백 확보 */
+  padding-bottom: 84px;
 }
 
 /* =========================
@@ -25,67 +29,17 @@ body {
   z-index: -2;
 }
 
-/* 가독성용 어두운 오버레이
-.bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  z-index: -1;
-} */
-
 /* =========================
    콘텐츠 레이아웃
+   - 지금은 포스터가 중심이라 비워두지만,
+     추후 상단에 안내 카드 등을 올릴 수 있음
    ========================= */
 .wrap {
   min-height: 100vh;
-  display: grid;
-  grid-template-rows: 1fr auto;
   padding: 32px 16px;
-
   max-width: 600px;
   width: 100%;
   margin: 0 auto;
-}
-
-/* =========================
-   카드
-   ========================= */
-.card {
-  align-self: center;
-  justify-self: center;
-
-  width: 60%;
-  max-width: 560px;
-
-  transform: translateY(150px);
-
-  background: rgba(0,0,0,0.50);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 16px;
-  padding: 18px 16px;
-  backdrop-filter: blur(6px);
-}
-
-.card-title {
-  margin: 0 0 10px;
-  font-size: 18px;
-  text-align: center;
-}
-
-.list {
-  margin: 0;
-  padding-left: 18px;
-  line-height: 1.7;
-  opacity: 0.95;
-}
-
-.actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
 /* =========================
@@ -111,13 +65,61 @@ body {
   background: transparent;
 }
 
-.footer {
-  padding: 10px 4px;
-  opacity: 0.8;
+/* ✅ 버튼이 <button>일 때 기본 스타일 리셋 */
+button.btn {
+  font: inherit;
+  border: 1px solid rgba(255,255,255,0.25);
 }
 
 /* =========================
-   참여 신청 모달 UI
+   ✅ 하단 고정 Footer 메뉴
+   ========================= */
+.footer-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  /* ✅ 중앙 정렬 느낌 */
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+
+  padding: 24px 24px;
+  z-index: 40;
+
+  /* ✅ 반투명 + 블러 */
+  background: rgba(0,0,0,0.45);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+}
+
+/* footer 버튼 */
+.footer-btn {
+  font: inherit;
+  cursor: pointer;
+
+  padding: 20px 24px;
+  font-size: 18px;
+  border-radius: 14px;
+
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.footer-btn:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+/* 참여신청 버튼 강조(선택) */
+.footer-btn.primary {
+  background: rgba(255,255,255,0.20);
+  border-color: rgba(255,255,255,0.28);
+}
+
+/* =========================
+   공용 모달 UI
    ========================= */
 
 /* 모달 전체 컨테이너(기본 숨김) */
@@ -175,7 +177,51 @@ body {
   border: 1px solid rgba(255, 80, 80, 0.35);
 }
 
-/* 폼 필드 */
+/* =========================
+   ✅ 소개/금주게임용 텍스트 스타일
+   ========================= */
+.modal-text {
+  margin: 0 0 10px;
+  line-height: 1.6;
+  opacity: 0.95;
+}
+
+.modal-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  line-height: 1.7;
+  opacity: 0.95;
+}
+
+/* 금주의 보드게임: 작은 카드 목록 */
+.weekly-cards {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 12px;
+}
+
+.mini-card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.mini-card-title {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.mini-card-desc {
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.45;
+  font-size: 13px;
+}
+
+/* =========================
+   참여 신청 폼 UI (기존 유지)
+   ========================= */
 .field {
   display: block;
   margin-bottom: 10px;
@@ -226,8 +272,8 @@ select.field-input {
 
 /* ✅ 드롭다운(옵션) 글자색 문제 해결 */
 select.field-input option {
-  color: #000;          /* 옵션 글자색(검정) */
-  background: #fff;     /* 옵션 배경색(흰색) */
+  color: #000;
+  background: #fff;
 }
 
 /* 모달 버튼 영역 */
@@ -238,18 +284,14 @@ select.field-input option {
   margin-top: 12px;
 }
 
-/* ✅ 버튼이 <button>일 때 기본 스타일 리셋 */
-button.btn {
-  font: inherit;
-  border: 1px solid rgba(255,255,255,0.25);
-}
-
 /* =========================
    반응형(모바일) 보정
    ========================= */
 @media (max-width: 420px) {
-  .card { transform: translateY(110px); }
-  .modal-card { padding: 14px; }
   .btn { width: 100%; text-align: center; }
   .modal-actions { flex-direction: column; }
+
+  /* footer가 좁은 화면에서 너무 꽉 차면 줄바꿈 */
+  .footer-nav { flex-wrap: wrap; }
+  .footer-btn { flex: 1 1 auto; }
 }
