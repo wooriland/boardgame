@@ -295,3 +295,24 @@ select.field-input option {
   .footer-nav { flex-wrap: wrap; }
   .footer-btn { flex: 1 1 auto; }
 }
+
+@media (max-width: 420px) {
+  /* ✅ footer 자체를 얇게 */
+  .footer-nav {
+    padding: 8px 10px;         /* 12px → 8px */
+    gap: 8px;                  /* 10px → 8px */
+  }
+
+  /* ✅ 버튼을 컴팩트하게 */
+  .footer-btn {
+    padding: 8px 10px;         /* 10px 12px → 8px 10px */
+    border-radius: 12px;       /* 14px → 12px */
+    font-size: 13px;           /* 글자 작게 */
+    letter-spacing: -0.2px;    /* 한글 폭 살짝 줄여 과한 느낌 완화 */
+  }
+
+  /* ✅ 바디 하단 여백도 footer 얇아진 만큼 조정 */
+  body {
+    padding-bottom: 68px;      /* 84px → 68px (대략) */
+  }
+}
