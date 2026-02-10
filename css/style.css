@@ -316,3 +316,8 @@ select.field-input option {
     padding-bottom: 68px;      /* 84px → 68px (대략) */
   }
 }
+
+/* ✅ 모달 열렸을 때 배경 스크롤 방지(선택) */
+body.modal-open {
+  overflow: hidden;
+}
