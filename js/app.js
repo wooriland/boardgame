@@ -10,10 +10,10 @@
  *   2) 서버에서 easy/normal/hard 3칸을 받아서 카드 3개에 매핑
  *   3) 실패하면 사용자에게 메시지 출력
  *
- * 주의:
- * - GitHub Pages 같은 정적 호스팅에서는 "내 서버(168...)"로 직접 호출 시
- *   CORS/HTTP/HTTPS 문제가 날 수 있음
- * - 지금은 서버가 8080으로 열려 있으니, 배포용 API_BASE_URL을 168...로 바꿔서 테스트 가능
+ * ✅ 중요(혼합 콘텐츠):
+ * - GitHub Pages는 HTTPS로 열림.
+ * - 따라서 API도 HTTPS로 호출해야 브라우저가 차단하지 않는다.
+ * - 결론: 배포에서는 https://wooriland.duckdns.org 로만 호출해야 함.
  */
 
 // ======================
@@ -23,28 +23,20 @@
 // 1) 로컬 개발(내 PC Spring)
 // - 웹이 로컬이면: http://localhost:8080
 //
-// 2) 배포 서버(OCI Spring, 지금 네가 올린 서버)
-// - http://168.107.60.189:8080
+// 2) 배포(정적 호스팅: GitHub Pages 등)
+// - 반드시 HTTPS로 제공되는 프록시/도메인을 사용해야 함.
+// - ✅ 너는 이미 https://wooriland.duckdns.org 를 쓰고 있고, 참여신청도 DB에 기록되고 있음.
+//   → weekly도 동일하게 duckdns로 호출하면 Mixed Content 해결.
 //
-// 3) 도메인/프록시(나중에)
-// - https://wooriland.duckdns.org (이게 "스프링으로 프록시"가 잡혀있을 때만 안정적)
-//
-// ------------------------------------------------------
-// ✅ 지금 단계 추천:
-// - GitHub Pages에서 테스트한다면 https 페이지가 http API를 막을 수 있음(혼합콘텐츠).
-// - 가장 확실한 건 "API도 https로 제공"하거나, "같은 도메인으로 프록시"다.
-// - 하지만 지금은 일단 성공 확인이 목표이므로,
-//   운영 배포 테스트 시 API_BASE_URL을 OCI로 직접 잡아도 됨.
-// ------------------------------------------------------
 const API_BASE_URL =
   (location.hostname === "localhost" || location.hostname === "127.0.0.1")
     ? "http://localhost:8080"
-    : "http://168.107.60.189:8080"; // ✅ 지금은 OCI 직접 호출(성공 확인용)
+    : "https://wooriland.duckdns.org"; // ✅ 배포는 HTTPS 도메인으로 고정 (Mixed Content 방지)
 
 // POST /api/applications
 const APPLY_ENDPOINT = "/api/applications";
 
-// GET /api/recommend/weekly  ✅ (추가)
+// GET /api/recommend/weekly
 const WEEKLY_ENDPOINT = "/api/recommend/weekly";
 
 // ======================
@@ -71,7 +63,7 @@ const deptEtcInput = document.getElementById("deptEtcInput");
 const nameInput = document.getElementById("nameInput");
 const phoneInput = document.getElementById("phoneInput");
 
-// ✅ (추가) 금주의 보드게임 DOM (index.html에서 추가한 id들)
+// ✅ 금주의 보드게임 DOM (index.html에 있는 id들)
 const weeklyCards = document.getElementById("weeklyCards");
 const weeklyStatus = document.getElementById("weeklyStatus");
 const weekStartDate = document.getElementById("weekStartDate");
@@ -126,10 +118,9 @@ function openModalWithView(mode) {
     viewWeekly.hidden = false;
     openModal();
 
-    // ✅ (추가) 모달 열리는 즉시 주간 추천 API 호출
-    // - 사용자가 "금주의 보드게임"을 눌렀을 때만 호출한다(불필요한 트래픽 방지)
+    // ✅ 모달 열리는 즉시 주간 추천 API 호출
+    // - 사용자가 "금주의 보드게임"을 눌렀을 때만 호출(불필요 트래픽 방지)
     loadWeeklyRecommendation();
-
     return;
   }
 
@@ -205,7 +196,7 @@ function buildPayload() {
 }
 
 // =========================================================
-// ✅ (추가) 금주의 보드게임: UI 렌더링 유틸
+// ✅ 금주의 보드게임: UI 렌더링 유틸
 // =========================================================
 
 /**
@@ -246,7 +237,6 @@ function setWeeklySuccess(data) {
   weeklyStatus.style.display = "none";
   weeklyStatus.textContent = "";
 
-  // ✅ 3개 카드 렌더
   const items = [
     { key: "easy", label: "EASY", value: data?.easy },
     { key: "normal", label: "NORMAL", value: data?.normal },
@@ -256,13 +246,12 @@ function setWeeklySuccess(data) {
   weeklyCards.innerHTML = items.map((it) => {
     const name = it.value?.name ?? "(데이터 없음)";
     const desc = it.value?.description ?? "";
-    // difficulty는 서버가 내려주지만, UI에서는 라벨로도 충분해서 둘 다 보여줄 수 있음
     const diff = it.value?.difficulty ?? it.label;
 
     return `
-      <article class="mini-card" data-difficulty="${diff}">
-        <!-- ✅ 난이도 뱃지(원하면 CSS로 꾸미기 좋음) -->
-        <div class="mini-card-badge">${diff}</div>
+      <article class="mini-card" data-difficulty="${escapeHtml(diff)}">
+        <!-- ✅ 난이도 텍스트(뱃지처럼 보이게 하려면 CSS로 mini-card-badge 스타일 추가) -->
+        <div class="mini-card-badge">${escapeHtml(diff)}</div>
 
         <h4 class="mini-card-title">${escapeHtml(name)}</h4>
         <p class="mini-card-desc">${escapeHtml(desc)}</p>
@@ -272,8 +261,7 @@ function setWeeklySuccess(data) {
 }
 
 /**
- * ✅ XSS 방지(서버/DB 문자열을 HTML에 꽂을 때는 기본적으로 escape)
- * - 지금은 내부용이지만 습관 들이면 안전함
+ * ✅ XSS 방지(서버/DB 문자열을 HTML에 꽂을 때는 escape)
  */
 function escapeHtml(str) {
   return String(str)
@@ -285,10 +273,10 @@ function escapeHtml(str) {
 }
 
 // =========================================================
-// ✅ (추가) 금주의 보드게임: 서버 호출
+// ✅ 금주의 보드게임: 서버 호출
 // =========================================================
 async function loadWeeklyRecommendation() {
-  // ✅ index.html을 아직 수정 안 해서 DOM이 없으면, 여기서 바로 리턴(에러 방지)
+  // ✅ DOM이 없으면 바로 리턴(에러 방지)
   if (!weeklyCards || !weeklyStatus) {
     console.warn("[weekly] DOM이 없습니다. index.html에 weeklyCards/weeklyStatus/weekStartDate id가 있는지 확인하세요.");
     return;
@@ -299,14 +287,10 @@ async function loadWeeklyRecommendation() {
   try {
     const res = await fetch(`${API_BASE_URL}${WEEKLY_ENDPOINT}`, {
       method: "GET",
-      headers: {
-        // ✅ JSON 응답을 기대한다는 힌트(필수는 아님)
-        "Accept": "application/json"
-      }
+      headers: { "Accept": "application/json" }
     });
 
     if (!res.ok) {
-      // 서버가 text/plain이나 에러 json을 줄 수 있으니 일단 text로 읽어서 로그에 남김
       const errText = await res.text().catch(() => "");
       console.error("[weekly] 서버 오류:", res.status, errText);
       setWeeklyError(`불러오기 실패 (HTTP ${res.status})`);
@@ -326,9 +310,6 @@ async function loadWeeklyRecommendation() {
 
   } catch (err) {
     console.error("[weekly] 네트워크 예외:", err);
-
-    // ✅ https 페이지에서 http API 호출하면 Mixed Content로 막히는 경우가 많음
-    //    이 경우 브라우저 콘솔에 Mixed Content 경고가 뜬다.
     setWeeklyError("서버 연결에 실패했습니다. (API 주소/HTTPS/CORS 확인)");
   }
 }
@@ -384,7 +365,7 @@ if (joinForm) {
       });
 
       if (!res.ok) {
-        const errText = await res.text();
+        const errText = await res.text().catch(() => "");
         console.error("서버 오류:", errText);
         alert("저장에 실패했습니다.");
         return;
