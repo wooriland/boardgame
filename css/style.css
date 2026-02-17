@@ -168,6 +168,13 @@ button.btn {
   font-size: 18px;
 }
 
+/* ✅ (추가) "금주의 보드게임" 기준일 텍스트(작게) */
+.modal-subtitle {
+  margin: -6px 0 12px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
 /* 경고 메시지 */
 .modal-warning {
   margin: 0 0 10px;
@@ -193,6 +200,21 @@ button.btn {
   opacity: 0.95;
 }
 
+/* =========================
+   ✅ (추가) 금주의 보드게임: 로딩/에러 상태 문구
+   - app.js에서 weeklyStatus에 넣어줄 텍스트 영역용
+   ========================= */
+.weekly-status {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+
 /* 금주의 보드게임: 작은 카드 목록 */
 .weekly-cards {
   display: grid;
@@ -201,15 +223,43 @@ button.btn {
 }
 
 .mini-card {
+  position: relative; /* ✅ 뱃지 absolute를 위해 */
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 14px;
   padding: 12px;
 }
 
+/* ✅ (추가) 난이도 뱃지(우상단) */
+.mini-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.10);
+  opacity: 0.95;
+}
+
+/* ✅ (추가) 난이도별 약간의 톤 차이(색 고정하지 않고 "투명도"만 다르게) */
+.mini-card[data-difficulty="EASY"] .mini-card-badge {
+  background: rgba(255,255,255,0.10);
+}
+.mini-card[data-difficulty="NORMAL"] .mini-card-badge {
+  background: rgba(255,255,255,0.14);
+}
+.mini-card[data-difficulty="HARD"] .mini-card-badge {
+  background: rgba(255,255,255,0.18);
+}
+
 .mini-card-title {
   margin: 0 0 6px;
   font-size: 15px;
+
+  /* ✅ 뱃지와 겹치지 않게 오른쪽 여백 */
+  padding-right: 64px;
 }
 
 .mini-card-desc {
@@ -300,20 +350,20 @@ select.field-input option {
   /* ✅ footer 자체를 얇게 */
   .footer-nav {
     padding: 24px 10px;         /* 12px → 8px */
-    gap: 8px;                  /* 10px → 8px */
+    gap: 8px;                   /* 10px → 8px */
   }
 
   /* ✅ 버튼을 컴팩트하게 */
   .footer-btn {
     padding: 20px 10px;         /* 10px 12px → 8px 10px */
-    border-radius: 12px;       /* 14px → 12px */
-    font-size: 13px;           /* 글자 작게 */
-    letter-spacing: -0.2px;    /* 한글 폭 살짝 줄여 과한 느낌 완화 */
+    border-radius: 12px;        /* 14px → 12px */
+    font-size: 13px;            /* 글자 작게 */
+    letter-spacing: -0.2px;     /* 한글 폭 살짝 줄여 과한 느낌 완화 */
   }
 
   /* ✅ 바디 하단 여백도 footer 얇아진 만큼 조정 */
   body {
-    padding-bottom: 68px;      /* 84px → 68px (대략) */
+    padding-bottom: 68px;       /* 84px → 68px (대략) */
   }
 }
 

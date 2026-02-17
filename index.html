@@ -80,29 +80,24 @@
 
       <!-- =====================================================
            2) 금주의 보드게임 뷰 (확인 버튼만 있음)
+           ✅ (변경) 하드코딩 3칸 제거 → JS가 API로 받아서 채움
            ===================================================== -->
       <section id="viewWeekly" class="modal-view" hidden>
         <p class="modal-text">
           이번 주 추천 보드게임입니다!<br/>
-          (추후 서버/데이터 연동해서 자동 업데이트 가능)
+          (일요일 기준으로 자동 갱신됩니다)
         </p>
 
-        <div class="weekly-cards">
-          <article class="mini-card">
-            <h4 class="mini-card-title">스플렌더</h4>
-            <p class="mini-card-desc">가볍게 시작하기 좋은 엔진빌딩/세트컬렉션 게임</p>
-          </article>
+        <!-- ✅ (추가) "이번 주 시작일"을 작은 글씨로 분리해서 표시 -->
+        <!-- style.css의 .modal-subtitle 적용 -->
+        <p class="modal-subtitle" id="weekStartDate" aria-live="polite"></p>
 
-          <article class="mini-card">
-            <h4 class="mini-card-title">카탄</h4>
-            <p class="mini-card-desc">자원 교환과 전략이 재미있는 대표적인 보드게임</p>
-          </article>
+        <!-- ✅ (추가) 로딩/에러 메시지 영역 -->
+        <!-- style.css의 .weekly-status 적용 -->
+        <p class="weekly-status" id="weeklyStatus" aria-live="polite">불러오는 중...</p>
 
-          <article class="mini-card">
-            <h4 class="mini-card-title">아발론</h4>
-            <p class="mini-card-desc">대화와 추리가 핵심인 팀 기반 마피아류 게임</p>
-          </article>
-        </div>
+        <!-- ✅ 3칸 카드 컨테이너 (JS가 여기 안에 3개를 그린다) -->
+        <div class="weekly-cards" id="weeklyCards"></div>
 
         <div class="modal-actions">
           <button type="button" class="btn" data-action="close">확인</button>
@@ -155,6 +150,6 @@
   </div>
 
   <!-- ✅ 캐시 무효화(중요): v 값만 바꾸면 브라우저가 새 JS를 무조건 받음 -->
-  <script src="./js/app.js?v=20260210-3"></script>
+  <script src="./js/app.js?v=20260217-1"></script>
 </body>
 </html>
