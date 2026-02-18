@@ -3,12 +3,7 @@
  * - 기존 구조 유지
  * - "참여신청" 서버 연동 완성
  * - ✅ (추가) "금주의 보드게임" 서버 연동 (/api/recommend/weekly)
- *
- * 목표:
- * - [금주의 보드게임] 버튼 클릭 시
- *   1) 모달 열림
- *   2) 서버에서 easy/normal/hard 3칸을 받아서 카드 3개에 매핑
- *   3) 실패하면 사용자에게 메시지 출력
+ * - ✅ (추가) 참여신청에 timeSlots(EASY/NORMAL/HARD) 복수 선택 추가
  *
  * ✅ 중요(혼합 콘텐츠):
  * - GitHub Pages는 HTTPS로 열림.
@@ -19,15 +14,6 @@
 // ======================
 // ✅ 서버 API 주소
 // ======================
-//
-// 1) 로컬 개발(내 PC Spring)
-// - 웹이 로컬이면: http://localhost:8080
-//
-// 2) 배포(정적 호스팅: GitHub Pages 등)
-// - 반드시 HTTPS로 제공되는 프록시/도메인을 사용해야 함.
-// - ✅ 너는 이미 https://wooriland.duckdns.org 를 쓰고 있고, 참여신청도 DB에 기록되고 있음.
-//   → weekly도 동일하게 duckdns로 호출하면 Mixed Content 해결.
-//
 const API_BASE_URL =
   (location.hostname === "localhost" || location.hostname === "127.0.0.1")
     ? "http://localhost:8080"
@@ -68,8 +54,16 @@ const weeklyCards = document.getElementById("weeklyCards");
 const weeklyStatus = document.getElementById("weeklyStatus");
 const weekStartDate = document.getElementById("weekStartDate");
 
+// ✅ (추가) timeSlots UI DOM
+const slotPanel = document.getElementById("slotPanel");
+const slotEasy = document.getElementById("slotEasy");
+const slotNormal = document.getElementById("slotNormal");
+const slotHard = document.getElementById("slotHard");
+const slotWarning = document.getElementById("slotWarning");
+const submitBtn = document.getElementById("submitBtn");
+
 // ======================
-// 경고 메시지
+// 경고 메시지(공용)
 // ======================
 function showWarning(message = "모두 적으셔야 합니다.") {
   modalWarning.textContent = message;
@@ -78,6 +72,18 @@ function showWarning(message = "모두 적으셔야 합니다.") {
 
 function hideWarning() {
   modalWarning.style.display = "none";
+}
+
+// ✅ timeSlots 경고
+function showSlotWarning(message = "시간대를 1개 이상 선택해주세요.") {
+  if (!slotWarning) return;
+  slotWarning.textContent = message;
+  slotWarning.style.display = "block";
+}
+
+function hideSlotWarning() {
+  if (!slotWarning) return;
+  slotWarning.style.display = "none";
 }
 
 // ======================
@@ -99,11 +105,13 @@ function closeModal() {
   mainModal.style.display = "none";
   mainModal.setAttribute("aria-hidden", "true");
   hideWarning();
+  hideSlotWarning();
   document.body.classList.remove("modal-open");
 }
 
 function openModalWithView(mode) {
   hideWarning();
+  hideSlotWarning();
   hideAllViews();
 
   if (mode === "intro") {
@@ -119,7 +127,6 @@ function openModalWithView(mode) {
     openModal();
 
     // ✅ 모달 열리는 즉시 주간 추천 API 호출
-    // - 사용자가 "금주의 보드게임"을 눌렀을 때만 호출(불필요 트래픽 방지)
     loadWeeklyRecommendation();
     return;
   }
@@ -141,9 +148,23 @@ function openModalWithView(mode) {
 // ======================
 function resetJoinForm() {
   if (!joinForm) return;
+
   joinForm.reset();
+
+  // dept etc 초기화
   deptEtcField.style.display = "none";
   deptEtcInput.value = "";
+
+  // ✅ slot UI 초기화
+  if (slotPanel) slotPanel.style.display = "none";
+  if (slotEasy) slotEasy.checked = false;
+  if (slotNormal) slotNormal.checked = false;
+  if (slotHard) slotHard.checked = false;
+
+  hideSlotWarning();
+
+  // ✅ submit 버튼 기본 비활성화(필수 입력 + 슬롯 선택 만족 시 활성화)
+  if (submitBtn) submitBtn.disabled = true;
 }
 
 function updateDeptEtcVisibility() {
@@ -154,10 +175,13 @@ function updateDeptEtcVisibility() {
     deptEtcField.style.display = "none";
     deptEtcInput.value = "";
   }
+
+  // ✅ 입력 상태가 바뀌면 UI 상태 업데이트
+  updateJoinUiState();
 }
 
 // ======================
-// 유효성 검사
+// 유효성 검사 (기존 + 슬롯 체크 분리)
 // ======================
 function validateForm() {
   const dept = deptSelect.value.trim();
@@ -177,6 +201,51 @@ function validateForm() {
   return true;
 }
 
+// ✅ timeSlots 1개 이상 체크 여부
+function hasAnySlotChecked() {
+  return !!(slotEasy?.checked || slotNormal?.checked || slotHard?.checked);
+}
+
+// ✅ 선택된 슬롯 배열 만들기
+function getSelectedSlots() {
+  const slots = [];
+  if (slotEasy?.checked) slots.push("EASY");
+  if (slotNormal?.checked) slots.push("NORMAL");
+  if (slotHard?.checked) slots.push("HARD");
+  return slots;
+}
+
+// ======================
+// ✅ 참여 신청 UI 상태 업데이트
+// - 필수 입력 완료 → slotPanel 펼치기
+// - (필수 입력 OK && slot 1개 이상) → submit 활성화
+// ======================
+function updateJoinUiState() {
+  const formOk = validateForm();
+
+  // ✅ 필수 입력 OK일 때만 slotPanel 오픈
+  if (slotPanel) {
+    slotPanel.style.display = formOk ? "block" : "none";
+  }
+
+  // ✅ 슬롯 체크 상태
+  const slotOk = hasAnySlotChecked();
+
+  // ✅ submit 버튼 활성 조건
+  if (submitBtn) {
+    submitBtn.disabled = !(formOk && slotOk);
+  }
+
+  // ✅ 슬롯 경고는 "필수 입력이 완료됐는데도 slot 미선택"일 때만 노출(UX)
+  if (formOk && !slotOk) {
+    // 아직 사용자가 체크를 안 했을 뿐이므로 기본은 숨김(강제 경고는 submit 때)
+    // 여기서는 숨김 유지
+    hideSlotWarning();
+  } else {
+    hideSlotWarning();
+  }
+}
+
 // ======================
 // payload 생성
 // ======================
@@ -188,10 +257,14 @@ function buildPayload() {
 
   const phoneDigits = phoneInput.value.trim().replace(/\D/g, "");
 
+  // ✅ 선택된 슬롯
+  const timeSlots = getSelectedSlots();
+
   return {
     dept: finalDept,
     name: nameInput.value.trim(),
-    phone: phoneDigits
+    phone: phoneDigits,
+    timeSlots // ✅ 추가: ["EASY","HARD"] 형태
   };
 }
 
@@ -250,9 +323,7 @@ function setWeeklySuccess(data) {
 
     return `
       <article class="mini-card" data-difficulty="${escapeHtml(diff)}">
-        <!-- ✅ 난이도 텍스트(뱃지처럼 보이게 하려면 CSS로 mini-card-badge 스타일 추가) -->
         <div class="mini-card-badge">${escapeHtml(diff)}</div>
-
         <h4 class="mini-card-title">${escapeHtml(name)}</h4>
         <p class="mini-card-desc">${escapeHtml(desc)}</p>
       </article>
@@ -342,6 +413,17 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// ✅ 입력 변화 감지 → slotPanel 표시/submit 활성화 상태 갱신
+nameInput?.addEventListener("input", updateJoinUiState);
+phoneInput?.addEventListener("input", updateJoinUiState);
+deptEtcInput?.addEventListener("input", updateJoinUiState);
+deptSelect?.addEventListener("change", updateJoinUiState);
+
+// ✅ 체크박스 변화 감지
+slotEasy?.addEventListener("change", updateJoinUiState);
+slotNormal?.addEventListener("change", updateJoinUiState);
+slotHard?.addEventListener("change", updateJoinUiState);
+
 // ======================
 // 🚀 참여 신청 서버 전송
 // ======================
@@ -349,9 +431,19 @@ if (joinForm) {
   joinForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     hideWarning();
+    hideSlotWarning();
 
+    // ✅ 1) 필수 입력 체크
     if (!validateForm()) {
       showWarning("모두 적으셔야 합니다.");
+      updateJoinUiState(); // UI 상태도 동기화
+      return;
+    }
+
+    // ✅ 2) timeSlots 1개 이상 체크
+    if (!hasAnySlotChecked()) {
+      showSlotWarning("시간대를 1개 이상 선택해주세요.");
+      updateJoinUiState();
       return;
     }
 
@@ -366,7 +458,7 @@ if (joinForm) {
 
       if (!res.ok) {
         const errText = await res.text().catch(() => "");
-        console.error("서버 오류:", errText);
+        console.error("서버 오류:", res.status, errText);
         alert("저장에 실패했습니다.");
         return;
       }
@@ -374,6 +466,9 @@ if (joinForm) {
       const data = await res.json();
 
       closeModal();
+
+      // ✅ 응답이 확장되면( id, timeSlots ) 같이 보여줄 수도 있음
+      // - 지금은 message 우선
       alert(data.message || "참여 신청이 완료 되었습니다!");
 
     } catch (err) {
@@ -382,3 +477,6 @@ if (joinForm) {
     }
   });
 }
+
+// ✅ 페이지 로드 직후: 혹시 모달 상태/버튼 상태 정리
+updateJoinUiState();

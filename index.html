@@ -89,11 +89,9 @@
         </p>
 
         <!-- ✅ (추가) "이번 주 시작일"을 작은 글씨로 분리해서 표시 -->
-        <!-- style.css의 .modal-subtitle 적용 -->
         <p class="modal-subtitle" id="weekStartDate" aria-live="polite"></p>
 
         <!-- ✅ (추가) 로딩/에러 메시지 영역 -->
-        <!-- style.css의 .weekly-status 적용 -->
         <p class="weekly-status" id="weeklyStatus" aria-live="polite">불러오는 중...</p>
 
         <!-- ✅ 3칸 카드 컨테이너 (JS가 여기 안에 3개를 그린다) -->
@@ -105,9 +103,11 @@
       </section>
 
       <!-- =====================================================
-           3) 참여 신청 뷰 (기존 구현 유지)
-           - 취소/참여 버튼
-           - 검증 로직 / '그 외' 입력 로직 / 서버 POST 그대로 활용
+           3) 참여 신청 뷰
+           ✅ 변경점:
+           - 필수 입력(부서/이름/연락처) 완료 후 아래 영역이 펼쳐지며
+             시간대(게임 난이도 세션) 복수 선택 체크박스가 등장
+           - 1개 이상 선택해야 "참여" 버튼 활성화
            ===================================================== -->
       <section id="viewJoin" class="modal-view" hidden>
         <form id="joinForm">
@@ -139,9 +139,50 @@
             <input id="phoneInput" class="field-input" type="tel" inputmode="numeric" placeholder="01012345678" required />
           </label>
 
+          <!-- =====================================================
+               ✅ (추가) 시간대/게임 선택 영역
+               - 기본은 숨김(display:none)
+               - JS에서 필수 입력이 모두 채워지면 펼쳐서 보여준다.
+               - 체크박스는 복수 선택 가능
+               - 1개 이상 선택해야 submit 가능
+               ===================================================== -->
+          <div class="slot-panel" id="slotPanel" style="display:none;">
+            <p class="modal-text" style="margin-top: 8px;">
+              참여할 시간대를 선택해주세요. (복수 선택 가능)
+            </p>
+
+            <!-- ✅ JS에서 금주의 게임 제목을 같이 넣고 싶으면 아래 span을 채우면 됨 -->
+            <p class="modal-subtitle" id="slotHint" aria-live="polite">
+              운영 시간: EASY 13~14 / NORMAL 14~16 / HARD 16~18
+            </p>
+
+            <label class="slot-item">
+              <input type="checkbox" id="slotEasy" name="timeSlots" value="EASY" />
+              <span>EASY (13:00~14:00)</span>
+            </label>
+
+            <label class="slot-item">
+              <input type="checkbox" id="slotNormal" name="timeSlots" value="NORMAL" />
+              <span>NORMAL (14:00~16:00)</span>
+            </label>
+
+            <label class="slot-item">
+              <input type="checkbox" id="slotHard" name="timeSlots" value="HARD" />
+              <span>HARD (16:00~18:00)</span>
+            </label>
+
+            <!-- ✅ 체크박스 안내(1개 이상 선택 필요) -->
+            <p class="modal-warning" id="slotWarning" style="display:none; margin-top: 10px;">
+              시간대를 1개 이상 선택해주세요.
+            </p>
+          </div>
+
           <div class="modal-actions">
             <button type="button" class="btn ghost" id="cancelBtn">취소</button>
-            <button type="submit" class="btn" id="submitBtn">참여</button>
+
+            <!-- ✅ (변경) 기본은 비활성화
+                 - JS에서 (필수입력 OK && 슬롯 1개 이상 체크)일 때 enabled 처리 -->
+            <button type="submit" class="btn" id="submitBtn" disabled>참여</button>
           </div>
         </form>
       </section>
@@ -150,6 +191,6 @@
   </div>
 
   <!-- ✅ 캐시 무효화(중요): v 값만 바꾸면 브라우저가 새 JS를 무조건 받음 -->
-  <script src="./js/app.js?v=20260217-2"></script>
+  <script src="./js/app.js?v=20260217-3"></script>
 </body>
 </html>
