@@ -4,6 +4,8 @@
  * - "참여신청" 서버 연동 완성
  * - ✅ (추가) "금주의 보드게임" 서버 연동 (/api/recommend/weekly)
  * - ✅ (추가) 참여신청에 timeSlots(EASY/NORMAL/HARD) 복수 선택 추가
+ * - ✅ (추가) 신청 옵션 API(/api/apply/options) 연동:
+ *    체크박스 라벨: 난이도(시간) 게임이름 (신청수) · 인원
  *
  * ✅ 중요(혼합 콘텐츠):
  * - GitHub Pages는 HTTPS로 열림.
@@ -24,6 +26,9 @@ const APPLY_ENDPOINT = "/api/applications";
 
 // GET /api/recommend/weekly
 const WEEKLY_ENDPOINT = "/api/recommend/weekly";
+
+// ✅ (추가) GET /api/apply/options
+const APPLY_OPTIONS_ENDPOINT = "/api/apply/options";
 
 // ======================
 // DOM
@@ -49,18 +54,30 @@ const deptEtcInput = document.getElementById("deptEtcInput");
 const nameInput = document.getElementById("nameInput");
 const phoneInput = document.getElementById("phoneInput");
 
-// ✅ 금주의 보드게임 DOM (index.html에 있는 id들)
+// ✅ (추가) peopleCount input
+const peopleCountInput = document.getElementById("peopleCountInput");
+
+// ✅ 금주의 보드게임 DOM
 const weeklyCards = document.getElementById("weeklyCards");
 const weeklyStatus = document.getElementById("weeklyStatus");
 const weekStartDate = document.getElementById("weekStartDate");
 
-// ✅ (추가) timeSlots UI DOM
+// ✅ timeSlots UI DOM
 const slotPanel = document.getElementById("slotPanel");
 const slotEasy = document.getElementById("slotEasy");
 const slotNormal = document.getElementById("slotNormal");
 const slotHard = document.getElementById("slotHard");
 const slotWarning = document.getElementById("slotWarning");
 const submitBtn = document.getElementById("submitBtn");
+
+// ✅ (추가) 슬롯 라벨 span (index.html에서 id를 부여한 버전)
+const slotEasyLabel = document.getElementById("slotEasyLabel");
+const slotNormalLabel = document.getElementById("slotNormalLabel");
+const slotHardLabel = document.getElementById("slotHardLabel");
+
+// ✅ 신청 옵션 상태(체크박스 라벨 데이터)
+let applyOptionsCache = null; // { weekStartDate, options:[...] }
+let applyOptionsLoading = false;
 
 // ======================
 // 경고 메시지(공용)
@@ -125,8 +142,6 @@ function openModalWithView(mode) {
     modalTitle.textContent = "금주의 보드게임";
     viewWeekly.hidden = false;
     openModal();
-
-    // ✅ 모달 열리는 즉시 주간 추천 API 호출
     loadWeeklyRecommendation();
     return;
   }
@@ -137,6 +152,9 @@ function openModalWithView(mode) {
     resetJoinForm();
     openModal();
     deptSelect.focus();
+
+    // ✅ 신청 모달 열릴 때 옵션 API 호출 → 체크박스 라벨 갱신
+    loadApplyOptionsAndRenderLabels();
     return;
   }
 
@@ -155,7 +173,7 @@ function resetJoinForm() {
   deptEtcField.style.display = "none";
   deptEtcInput.value = "";
 
-  // ✅ slot UI 초기화
+  // slot UI 초기화
   if (slotPanel) slotPanel.style.display = "none";
   if (slotEasy) slotEasy.checked = false;
   if (slotNormal) slotNormal.checked = false;
@@ -163,8 +181,16 @@ function resetJoinForm() {
 
   hideSlotWarning();
 
-  // ✅ submit 버튼 기본 비활성화(필수 입력 + 슬롯 선택 만족 시 활성화)
+  // submit 버튼 기본 비활성화
   if (submitBtn) submitBtn.disabled = true;
+
+  // peopleCount 기본값
+  if (peopleCountInput) {
+    if (!peopleCountInput.value) peopleCountInput.value = "1";
+  }
+
+  // 라벨 기본값
+  renderSlotLabelsFallback();
 }
 
 function updateDeptEtcVisibility() {
@@ -176,12 +202,11 @@ function updateDeptEtcVisibility() {
     deptEtcInput.value = "";
   }
 
-  // ✅ 입력 상태가 바뀌면 UI 상태 업데이트
   updateJoinUiState();
 }
 
 // ======================
-// 유효성 검사 (기존 + 슬롯 체크 분리)
+// 유효성 검사
 // ======================
 function validateForm() {
   const dept = deptSelect.value.trim();
@@ -197,6 +222,12 @@ function validateForm() {
 
   const onlyDigits = phone.replace(/\D/g, "");
   if (onlyDigits.length < 10 || onlyDigits.length > 11) return false;
+
+  // peopleCount 검증(있을 때만)
+  if (peopleCountInput) {
+    const n = parseInt(String(peopleCountInput.value || "1"), 10);
+    if (Number.isNaN(n) || n < 1 || n > 99) return false;
+  }
 
   return true;
 }
@@ -217,33 +248,22 @@ function getSelectedSlots() {
 
 // ======================
 // ✅ 참여 신청 UI 상태 업데이트
-// - 필수 입력 완료 → slotPanel 펼치기
-// - (필수 입력 OK && slot 1개 이상) → submit 활성화
 // ======================
 function updateJoinUiState() {
   const formOk = validateForm();
 
-  // ✅ 필수 입력 OK일 때만 slotPanel 오픈
+  // 필수 입력 OK일 때만 slotPanel 오픈
   if (slotPanel) {
     slotPanel.style.display = formOk ? "block" : "none";
   }
 
-  // ✅ 슬롯 체크 상태
   const slotOk = hasAnySlotChecked();
 
-  // ✅ submit 버튼 활성 조건
   if (submitBtn) {
     submitBtn.disabled = !(formOk && slotOk);
   }
 
-  // ✅ 슬롯 경고는 "필수 입력이 완료됐는데도 slot 미선택"일 때만 노출(UX)
-  if (formOk && !slotOk) {
-    // 아직 사용자가 체크를 안 했을 뿐이므로 기본은 숨김(강제 경고는 submit 때)
-    // 여기서는 숨김 유지
-    hideSlotWarning();
-  } else {
-    hideSlotWarning();
-  }
+  hideSlotWarning();
 }
 
 // ======================
@@ -257,30 +277,132 @@ function buildPayload() {
 
   const phoneDigits = phoneInput.value.trim().replace(/\D/g, "");
 
-  // ✅ 선택된 슬롯
   const timeSlots = getSelectedSlots();
+
+  let peopleCount = 1;
+  if (peopleCountInput) {
+    const n = parseInt(String(peopleCountInput.value || "1"), 10);
+    if (!Number.isNaN(n) && n >= 1 && n <= 99) peopleCount = n;
+  }
 
   return {
     dept: finalDept,
     name: nameInput.value.trim(),
     phone: phoneDigits,
-    timeSlots // ✅ 추가: ["EASY","HARD"] 형태
+    peopleCount,
+    timeSlots
   };
+}
+
+// =========================================================
+// ✅ 신청 옵션(/api/apply/options): 체크박스 라벨 렌더
+// =========================================================
+
+function slotTimeTextFallback(slot) {
+  switch (String(slot || "").toUpperCase()) {
+    case "EASY": return "13:00~14:00";
+    case "NORMAL": return "14:00~15:00";
+    case "HARD": return "15:00~16:00";
+    default: return "";
+  }
+}
+
+/**
+ * ✅ index.html이 이미 <span id="slotEasyLabel">...</span> 구조이므로
+ * span을 새로 만들지 않고 해당 span.textContent만 교체한다.
+ */
+function setSlotLabel(slot, labelText) {
+  const key = String(slot || "").toUpperCase();
+  if (key === "EASY" && slotEasyLabel) slotEasyLabel.textContent = labelText;
+  if (key === "NORMAL" && slotNormalLabel) slotNormalLabel.textContent = labelText;
+  if (key === "HARD" && slotHardLabel) slotHardLabel.textContent = labelText;
+}
+
+function renderSlotLabelsFromOptions(optionsResponse) {
+  const opts = optionsResponse?.options || [];
+
+  const bySlot = new Map();
+  for (const it of opts) {
+    if (!it?.slot) continue;
+    bySlot.set(String(it.slot).toUpperCase(), it);
+  }
+
+  const easy = bySlot.get("EASY");
+  const normal = bySlot.get("NORMAL");
+  const hard = bySlot.get("HARD");
+
+  const makeText = (slot, it) => {
+    const time = it?.timeText || slotTimeTextFallback(slot);
+    const name = it?.gameName || "(미정)";
+    const cnt = typeof it?.applyCount === "number" ? it.applyCount : 0;
+
+    const minP = it?.minPlayers;
+    const maxP = it?.maxPlayers;
+    const peopleText =
+      (minP != null && maxP != null) ? ` · ${minP}~${maxP}인`
+        : (minP != null) ? ` · ${minP}인 이상`
+          : (maxP != null) ? ` · 최대 ${maxP}인`
+            : "";
+
+    return `${slot}(${time}) ${name} (${cnt})${peopleText}`;
+  };
+
+  setSlotLabel("EASY", makeText("EASY", easy));
+  setSlotLabel("NORMAL", makeText("NORMAL", normal));
+  setSlotLabel("HARD", makeText("HARD", hard));
+}
+
+function renderSlotLabelsFallback() {
+  setSlotLabel("EASY", `EASY(${slotTimeTextFallback("EASY")})`);
+  setSlotLabel("NORMAL", `NORMAL(${slotTimeTextFallback("NORMAL")})`);
+  setSlotLabel("HARD", `HARD(${slotTimeTextFallback("HARD")})`);
+}
+
+/**
+ * ✅ 신청 옵션 API 호출 + 라벨 렌더
+ */
+async function loadApplyOptionsAndRenderLabels() {
+  // 라벨 span이 하나도 없으면 렌더 불가
+  if (!slotEasyLabel && !slotNormalLabel && !slotHardLabel) return;
+
+  if (applyOptionsLoading) return;
+  applyOptionsLoading = true;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}${APPLY_OPTIONS_ENDPOINT}`, {
+      method: "GET",
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.error("[apply/options] 서버 오류:", res.status, errText);
+      renderSlotLabelsFallback();
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data?.weekStartDate || !Array.isArray(data?.options)) {
+      console.warn("[apply/options] 응답 구조가 예상과 다릅니다:", data);
+      renderSlotLabelsFallback();
+      return;
+    }
+
+    applyOptionsCache = data;
+    renderSlotLabelsFromOptions(data);
+
+  } catch (err) {
+    console.error("[apply/options] 네트워크 예외:", err);
+    renderSlotLabelsFallback();
+  } finally {
+    applyOptionsLoading = false;
+  }
 }
 
 // =========================================================
 // ✅ 금주의 보드게임: UI 렌더링 유틸
 // =========================================================
-
-/**
- * 서버 응답 예시:
- * {
- *   "weekStartDate":"2026-02-15",
- *   "easy":{"name":"...","difficulty":"EASY","description":"..."},
- *   "normal":{"name":"...","difficulty":"NORMAL","description":"..."},
- *   "hard":{"name":"...","difficulty":"HARD","description":"..."}
- * }
- */
 
 function setWeeklyLoading() {
   if (!weeklyStatus || !weeklyCards) return;
@@ -301,12 +423,10 @@ function setWeeklyError(message) {
 function setWeeklySuccess(data) {
   if (!weeklyStatus || !weeklyCards) return;
 
-  // ✅ weekStartDate 표시(있으면)
   if (weekStartDate && data?.weekStartDate) {
     weekStartDate.textContent = ` (기준일: ${data.weekStartDate})`;
   }
 
-  // ✅ 상태 메시지 숨김
   weeklyStatus.style.display = "none";
   weeklyStatus.textContent = "";
 
@@ -321,19 +441,25 @@ function setWeeklySuccess(data) {
     const desc = it.value?.description ?? "";
     const diff = it.value?.difficulty ?? it.label;
 
+    const minP = it.value?.minPlayers;
+    const maxP = it.value?.maxPlayers;
+    const peopleText =
+      (minP != null && maxP != null) ? `${minP}~${maxP}인`
+        : (minP != null) ? `${minP}인 이상`
+          : (maxP != null) ? `최대 ${maxP}인`
+            : "";
+
     return `
       <article class="mini-card" data-difficulty="${escapeHtml(diff)}">
         <div class="mini-card-badge">${escapeHtml(diff)}</div>
         <h4 class="mini-card-title">${escapeHtml(name)}</h4>
+        ${peopleText ? `<div class="mini-card-meta">${escapeHtml(peopleText)}</div>` : ``}
         <p class="mini-card-desc">${escapeHtml(desc)}</p>
       </article>
     `;
   }).join("");
 }
 
-/**
- * ✅ XSS 방지(서버/DB 문자열을 HTML에 꽂을 때는 escape)
- */
 function escapeHtml(str) {
   return String(str)
     .replaceAll("&", "&amp;")
@@ -347,7 +473,6 @@ function escapeHtml(str) {
 // ✅ 금주의 보드게임: 서버 호출
 // =========================================================
 async function loadWeeklyRecommendation() {
-  // ✅ DOM이 없으면 바로 리턴(에러 방지)
   if (!weeklyCards || !weeklyStatus) {
     console.warn("[weekly] DOM이 없습니다. index.html에 weeklyCards/weeklyStatus/weekStartDate id가 있는지 확인하세요.");
     return;
@@ -370,7 +495,6 @@ async function loadWeeklyRecommendation() {
 
     const data = await res.json();
 
-    // ✅ 최소 데이터 검증
     if (!data?.easy || !data?.normal || !data?.hard) {
       console.warn("[weekly] 응답 구조가 예상과 다릅니다:", data);
       setWeeklyError("추천 데이터 형식이 올바르지 않습니다.");
@@ -388,7 +512,6 @@ async function loadWeeklyRecommendation() {
 // ======================
 // 이벤트 등록
 // ======================
-
 footerButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     const mode = btn.getAttribute("data-modal");
@@ -413,13 +536,14 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// ✅ 입력 변화 감지 → slotPanel 표시/submit 활성화 상태 갱신
+// 입력 변화 감지
 nameInput?.addEventListener("input", updateJoinUiState);
 phoneInput?.addEventListener("input", updateJoinUiState);
 deptEtcInput?.addEventListener("input", updateJoinUiState);
 deptSelect?.addEventListener("change", updateJoinUiState);
+peopleCountInput?.addEventListener("input", updateJoinUiState);
 
-// ✅ 체크박스 변화 감지
+// 체크박스 변화 감지
 slotEasy?.addEventListener("change", updateJoinUiState);
 slotNormal?.addEventListener("change", updateJoinUiState);
 slotHard?.addEventListener("change", updateJoinUiState);
@@ -433,14 +557,12 @@ if (joinForm) {
     hideWarning();
     hideSlotWarning();
 
-    // ✅ 1) 필수 입력 체크
     if (!validateForm()) {
       showWarning("모두 적으셔야 합니다.");
-      updateJoinUiState(); // UI 상태도 동기화
+      updateJoinUiState();
       return;
     }
 
-    // ✅ 2) timeSlots 1개 이상 체크
     if (!hasAnySlotChecked()) {
       showSlotWarning("시간대를 1개 이상 선택해주세요.");
       updateJoinUiState();
@@ -466,10 +588,11 @@ if (joinForm) {
       const data = await res.json();
 
       closeModal();
-
-      // ✅ 응답이 확장되면( id, timeSlots ) 같이 보여줄 수도 있음
-      // - 지금은 message 우선
       alert(data.message || "참여 신청이 완료 되었습니다!");
+
+      // 신청 직후 신청수 갱신
+      applyOptionsCache = null;
+      loadApplyOptionsAndRenderLabels();
 
     } catch (err) {
       console.error(err);
@@ -478,5 +601,5 @@ if (joinForm) {
   });
 }
 
-// ✅ 페이지 로드 직후: 혹시 모달 상태/버튼 상태 정리
+// 페이지 로드 직후 상태 정리
 updateJoinUiState();

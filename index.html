@@ -23,10 +23,6 @@
        - 버튼 클릭 → 동일한 카드 팝업(모달) 열기
        ========================= -->
   <footer class="footer-nav" aria-label="하단 메뉴">
-    <!--
-      data-modal="intro|weekly|join"
-      JS에서 이 값을 읽어서 어떤 내용을 보여줄지 결정한다.
-    -->
     <button type="button" class="footer-btn" data-modal="intro">동아리 소개</button>
     <button type="button" class="footer-btn" data-modal="weekly">금주의 보드게임</button>
     <button type="button" class="footer-btn primary" data-modal="join">참여신청</button>
@@ -47,13 +43,13 @@
       <!-- ✅ 제목은 JS에서 상황에 맞게 변경 -->
       <h3 class="modal-title" id="modalTitle">제목</h3>
 
-      <!-- ✅ 공용 안내/경고 메시지(주로 참여신청 검증에서 사용) -->
+      <!-- ✅ 공용 안내/경고 메시지 -->
       <p class="modal-warning" id="modalWarning" style="display:none;">
         모두 적으셔야 합니다.
       </p>
 
       <!-- =====================================================
-           1) 동아리 소개 뷰 (확인 버튼만 있음)
+           1) 동아리 소개 뷰
            ===================================================== -->
       <section id="viewIntro" class="modal-view" hidden>
         <p class="modal-text">
@@ -73,14 +69,12 @@
         </ul>
 
         <div class="modal-actions">
-          <!-- ✅ 소개/금주게임은 "확인"만 누르면 닫힘 -->
           <button type="button" class="btn" data-action="close">확인</button>
         </div>
       </section>
 
       <!-- =====================================================
-           2) 금주의 보드게임 뷰 (확인 버튼만 있음)
-           ✅ (변경) 하드코딩 3칸 제거 → JS가 API로 받아서 채움
+           2) 금주의 보드게임 뷰
            ===================================================== -->
       <section id="viewWeekly" class="modal-view" hidden>
         <p class="modal-text">
@@ -88,13 +82,8 @@
           (일요일 기준으로 자동 갱신됩니다)
         </p>
 
-        <!-- ✅ (추가) "이번 주 시작일"을 작은 글씨로 분리해서 표시 -->
         <p class="modal-subtitle" id="weekStartDate" aria-live="polite"></p>
-
-        <!-- ✅ (추가) 로딩/에러 메시지 영역 -->
         <p class="weekly-status" id="weeklyStatus" aria-live="polite">불러오는 중...</p>
-
-        <!-- ✅ 3칸 카드 컨테이너 (JS가 여기 안에 3개를 그린다) -->
         <div class="weekly-cards" id="weeklyCards"></div>
 
         <div class="modal-actions">
@@ -104,10 +93,6 @@
 
       <!-- =====================================================
            3) 참여 신청 뷰
-           ✅ 변경점:
-           - 필수 입력(부서/이름/연락처) 완료 후 아래 영역이 펼쳐지며
-             시간대(게임 난이도 세션) 복수 선택 체크박스가 등장
-           - 1개 이상 선택해야 "참여" 버튼 활성화
            ===================================================== -->
       <section id="viewJoin" class="modal-view" hidden>
         <form id="joinForm">
@@ -139,39 +124,53 @@
             <input id="phoneInput" class="field-input" type="tel" inputmode="numeric" placeholder="01012345678" required />
           </label>
 
+          <!-- ✅ (추가) 신청 인원 -->
+          <label class="field">
+            <span class="field-label">신청 인원</span>
+            <input
+              id="peopleCountInput"
+              class="field-input"
+              type="number"
+              min="1"
+              max="99"
+              value="1"
+              inputmode="numeric"
+              aria-describedby="peopleCountHint"
+            />
+            <small id="peopleCountHint" class="field-hint">
+              예: 3명 같이 참여면 3 입력
+            </small>
+          </label>
+
           <!-- =====================================================
-               ✅ (추가) 시간대/게임 선택 영역
-               - 기본은 숨김(display:none)
-               - JS에서 필수 입력이 모두 채워지면 펼쳐서 보여준다.
-               - 체크박스는 복수 선택 가능
-               - 1개 이상 선택해야 submit 가능
+               ✅ 시간대/게임 선택 영역 (JS가 라벨을 서버데이터로 갱신)
                ===================================================== -->
           <div class="slot-panel" id="slotPanel" style="display:none;">
             <p class="modal-text" style="margin-top: 8px;">
               참여할 시간대를 선택해주세요. (복수 선택 가능)
             </p>
 
-            <!-- ✅ JS에서 금주의 게임 제목을 같이 넣고 싶으면 아래 span을 채우면 됨 -->
+            <!-- ✅ 참고용(서버에서 timeText가 내려오므로 실제 표시는 체크박스 라벨을 따름) -->
             <p class="modal-subtitle" id="slotHint" aria-live="polite">
-              운영 시간: EASY 13~14 / NORMAL 14~16 / HARD 16~18
+              운영 시간: EASY 13:00~14:00 / NORMAL 14:00~15:00 / HARD 15:00~16:00
             </p>
 
             <label class="slot-item">
               <input type="checkbox" id="slotEasy" name="timeSlots" value="EASY" />
-              <span>EASY (13:00~14:00)</span>
+              <!-- ✅ JS가 이 span의 텍스트만 교체 -->
+              <span id="slotEasyLabel">EASY (13:00~14:00)</span>
             </label>
 
             <label class="slot-item">
               <input type="checkbox" id="slotNormal" name="timeSlots" value="NORMAL" />
-              <span>NORMAL (14:00~16:00)</span>
+              <span id="slotNormalLabel">NORMAL (14:00~15:00)</span>
             </label>
 
             <label class="slot-item">
               <input type="checkbox" id="slotHard" name="timeSlots" value="HARD" />
-              <span>HARD (16:00~18:00)</span>
+              <span id="slotHardLabel">HARD (15:00~16:00)</span>
             </label>
 
-            <!-- ✅ 체크박스 안내(1개 이상 선택 필요) -->
             <p class="modal-warning" id="slotWarning" style="display:none; margin-top: 10px;">
               시간대를 1개 이상 선택해주세요.
             </p>
@@ -179,9 +178,6 @@
 
           <div class="modal-actions">
             <button type="button" class="btn ghost" id="cancelBtn">취소</button>
-
-            <!-- ✅ (변경) 기본은 비활성화
-                 - JS에서 (필수입력 OK && 슬롯 1개 이상 체크)일 때 enabled 처리 -->
             <button type="submit" class="btn" id="submitBtn" disabled>참여</button>
           </div>
         </form>
@@ -191,6 +187,6 @@
   </div>
 
   <!-- ✅ 캐시 무효화(중요): v 값만 바꾸면 브라우저가 새 JS를 무조건 받음 -->
-  <script src="./js/app.js?v=20260217-3"></script>
+  <script src="./js/app.js?v=20260220-1"></script>
 </body>
 </html>

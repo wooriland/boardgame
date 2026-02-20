@@ -10,9 +10,12 @@ body {
   color: #fff;
   overflow-x: hidden;
 
-  /* ✅ 하단 고정 footer가 컨텐츠를 가리지 않게
-     최소한 footer 높이만큼 바닥 여백 확보 */
+  /* ✅ 하단 고정 footer가 컨텐츠를 가리지 않게 */
   padding-bottom: 84px;
+
+  /* ✅ 텍스트 렌더링 개선 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* =========================
@@ -22,17 +25,15 @@ body {
   position: fixed;
   inset: 0;
   background-image: url("../assets/poster.png");
-  background-size: contain;         /* 포스터 전체 보이기 */
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  background-color: #000;           /* 남는 여백 색 */
+  background-color: #000;
   z-index: -2;
 }
 
 /* =========================
    콘텐츠 레이아웃
-   - 지금은 포스터가 중심이라 비워두지만,
-     추후 상단에 안내 카드 등을 올릴 수 있음
    ========================= */
 .wrap {
   min-height: 100vh;
@@ -46,7 +47,11 @@ body {
    버튼(공통)
    ========================= */
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
   padding: 10px 14px;
   border-radius: 12px;
   text-decoration: none;
@@ -55,10 +60,17 @@ body {
   color: #fff;
   background: rgba(255,255,255,0.18);
   border: 1px solid rgba(255,255,255,0.25);
+
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
 }
 
 .btn:hover {
   background: rgba(255,255,255,0.28);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0px);
 }
 
 .btn.ghost {
@@ -71,15 +83,23 @@ button.btn {
   border: 1px solid rgba(255,255,255,0.25);
 }
 
-/* ✅ (추가) 비활성화 버튼 스타일 */
+/* ✅ 비활성화 버튼 스타일 */
 button.btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
   background: rgba(255,255,255,0.10);
   border-color: rgba(255,255,255,0.14);
+  transform: none;
 }
 button.btn:disabled:hover {
   background: rgba(255,255,255,0.10);
+}
+
+/* ✅ 포커스 접근성 */
+:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.65);
+  outline-offset: 2px;
+  border-radius: 10px;
 }
 
 /* =========================
@@ -91,18 +111,16 @@ button.btn:disabled:hover {
   right: 0;
   bottom: 0;
 
-  /* ✅ 중앙 정렬 느낌 */
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 16px;
 
-  padding: 24px 24px;
+  padding: 16px 16px;
   z-index: 40;
 
-  /* ✅ 반투명 + 블러 */
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.55);
   border-top: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 }
 
 /* footer 버튼 */
@@ -110,43 +128,59 @@ button.btn:disabled:hover {
   font: inherit;
   cursor: pointer;
 
-  padding: 20px 24px;
-  font-size: 18px;
+  padding: 14px 16px;
+  font-size: 15px;
   border-radius: 14px;
 
   color: #fff;
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.18);
+
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
 }
 
 .footer-btn:hover {
   background: rgba(255,255,255,0.22);
+  transform: translateY(-1px);
 }
 
-/* 참여신청 버튼 강조(선택) */
+.footer-btn:active {
+  transform: translateY(0);
+}
+
+/* 참여신청 버튼 강조 */
 .footer-btn.primary {
-  background: rgba(255,255,255,0.20);
-  border-color: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.30);
 }
 
 /* =========================
    공용 모달 UI
    ========================= */
 
-/* 모달 전체 컨테이너(기본 숨김) */
+/* 모달 전체 컨테이너 */
 .modal {
   position: fixed;
   inset: 0;
-  display: none;              /* JS로 열 때 flex로 바꿈 */
+  display: none;
   align-items: center;
   justify-content: center;
   z-index: 50;
 
-  /* ✅ 모달이 열렸을 때 내부 콘텐츠가 길어지면 스크롤 가능 */
   padding: 18px 12px;
 }
 
-/* 모달 배경(어두운 딤) */
+/* ✅ 모달 열릴 때 '위에서 살짝 내려오는' 느낌 */
+.modal[aria-hidden="false"] .modal-card {
+  animation: modalPop 180ms ease-out;
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 모달 배경(딤) */
 .modal-backdrop {
   position: absolute;
   inset: 0;
@@ -156,30 +190,42 @@ button.btn:disabled:hover {
 /* 모달 카드 */
 .modal-card {
   position: relative;
-
-  /* ✅ 모바일에서도 잘 보이게 */
   width: min(520px, 100%);
   max-height: calc(100vh - 36px);
-
-  /* ✅ 내용이 길어지면 카드 내부 스크롤 */
   overflow: auto;
 
   background: rgba(0,0,0,0.82);
   border: 1px solid rgba(255,255,255,0.18);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 16px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 
-  /* ✅ 딤 위에서 더 또렷하게 */
   box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+
+  /* ✅ iOS/모바일 스크롤 자연스럽게 */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ✅ 스크롤바(가능하면) 부드럽게 */
+.modal-card::-webkit-scrollbar {
+  width: 10px;
+}
+.modal-card::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.35);
+}
+.modal-card::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.06);
 }
 
 .modal-title {
   margin: 0 0 12px;
   font-size: 18px;
+  letter-spacing: -0.2px;
 }
 
-/* ✅ (추가) "금주의 보드게임" 기준일 텍스트(작게) */
+/* "기준일" 같은 작은 텍스트 */
 .modal-subtitle {
   margin: -6px 0 12px;
   font-size: 12px;
@@ -196,7 +242,7 @@ button.btn:disabled:hover {
 }
 
 /* =========================
-   ✅ 소개/금주게임용 텍스트 스타일
+   소개/금주게임용 텍스트 스타일
    ========================= */
 .modal-text {
   margin: 0 0 10px;
@@ -212,7 +258,7 @@ button.btn:disabled:hover {
 }
 
 /* =========================
-   ✅ (추가) 금주의 보드게임: 로딩/에러 상태 문구
+   금주의 보드게임: 로딩/에러 상태 문구
    ========================= */
 .weekly-status {
   margin: 10px 0 12px;
@@ -225,7 +271,7 @@ button.btn:disabled:hover {
   opacity: 0.95;
 }
 
-/* 금주의 보드게임: 작은 카드 목록 */
+/* 금주의 보드게임: 카드 목록 */
 .weekly-cards {
   display: grid;
   gap: 10px;
@@ -233,14 +279,21 @@ button.btn:disabled:hover {
 }
 
 .mini-card {
-  position: relative; /* ✅ 뱃지 absolute를 위해 */
+  position: relative;
   background: rgba(255,255,255,0.08);
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 14px;
   padding: 12px;
+
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
 }
 
-/* ✅ (추가) 난이도 뱃지(우상단) */
+.mini-card:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+
 .mini-card-badge {
   position: absolute;
   top: 10px;
@@ -253,23 +306,20 @@ button.btn:disabled:hover {
   opacity: 0.95;
 }
 
-/* ✅ (추가) 난이도별 약간의 톤 차이(색 고정하지 않고 "투명도"만 다르게) */
-.mini-card[data-difficulty="EASY"] .mini-card-badge {
-  background: rgba(255,255,255,0.10);
-}
-.mini-card[data-difficulty="NORMAL"] .mini-card-badge {
-  background: rgba(255,255,255,0.14);
-}
-.mini-card[data-difficulty="HARD"] .mini-card-badge {
-  background: rgba(255,255,255,0.18);
-}
+.mini-card[data-difficulty="EASY"] .mini-card-badge { background: rgba(255,255,255,0.10); }
+.mini-card[data-difficulty="NORMAL"] .mini-card-badge { background: rgba(255,255,255,0.14); }
+.mini-card[data-difficulty="HARD"] .mini-card-badge { background: rgba(255,255,255,0.18); }
 
 .mini-card-title {
   margin: 0 0 6px;
   font-size: 15px;
-
-  /* ✅ 뱃지와 겹치지 않게 오른쪽 여백 */
   padding-right: 64px;
+}
+
+.mini-card-meta {
+  margin: 0 0 6px;
+  font-size: 12px;
+  opacity: 0.85;
 }
 
 .mini-card-desc {
@@ -280,7 +330,7 @@ button.btn:disabled:hover {
 }
 
 /* =========================
-   참여 신청 폼 UI (기존 유지)
+   참여 신청 폼 UI
    ========================= */
 .field {
   display: block;
@@ -303,6 +353,8 @@ button.btn:disabled:hover {
   background: rgba(255,255,255,0.08);
   color: #fff;
   outline: none;
+
+  transition: background 120ms ease, border-color 120ms ease;
 }
 
 .field-input:focus {
@@ -310,16 +362,22 @@ button.btn:disabled:hover {
   background: rgba(255,255,255,0.10);
 }
 
-/* 셀렉트 기본 스타일 보정(브라우저별 차이 줄임) */
+.field-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.78;
+  line-height: 1.4;
+}
+
+/* 셀렉트 보정 */
 select.field-input {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
 
-  /* 오른쪽 화살표 공간 */
   padding-right: 34px;
 
-  /* 간단한 화살표 느낌(텍스트로) */
   background-image:
     linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.7) 50%),
     linear-gradient(135deg, rgba(255,255,255,0.7) 50%, transparent 50%);
@@ -330,33 +388,28 @@ select.field-input {
   background-repeat: no-repeat;
 }
 
-/* ✅ 드롭다운(옵션) 글자색 문제 해결 */
+/* 옵션 글자색 */
 select.field-input option {
   color: #000;
   background: #fff;
 }
 
 /* =========================================================
-   ✅ (추가) 참여 신청: 시간대 선택(slot-panel)
-   - 필수 입력 완료 시 JS가 display:block으로 펼친다.
-   - "카드가 아래로 확장되는 느낌"을 위해 카드 스타일 + 여백 + 구분선
+   참여 신청: 시간대 선택(slot-panel)
    ========================================================= */
 .slot-panel {
   margin-top: 12px;
-  padding-top: 12px;
   border-top: 1px solid rgba(255,255,255,0.12);
 
-  /* 카드 느낌 */
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 14px;
   padding: 12px;
 
-  /* 열릴 때 자연스럽게 보이도록 기본 트랜지션(표시는 JS가 제어) */
   animation: slotFadeIn 180ms ease-out;
 }
 
-/* ✅ 체크박스 한 줄을 "카드형 버튼"처럼 */
+/* 체크박스 한 줄을 카드형으로 */
 .slot-item {
   display: flex;
   align-items: center;
@@ -371,17 +424,24 @@ select.field-input option {
 
   cursor: pointer;
   user-select: none;
+
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
 }
 
 .slot-item:hover {
   background: rgba(255,255,255,0.10);
+  transform: translateY(-1px);
 }
 
-/* ✅ 체크박스 크기/정렬 */
+.slot-item:active {
+  transform: translateY(0);
+}
+
+/* 체크박스 */
 .slot-item input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: rgba(255,255,255,0.85); /* 색 고정이라기보다 톤만 */
+  accent-color: rgba(255,255,255,0.85);
   flex: 0 0 auto;
 }
 
@@ -392,19 +452,17 @@ select.field-input option {
   opacity: 0.95;
 }
 
-/* ✅ 체크된 상태에서 살짝 강조(테두리/배경만) */
+/* ✅ 체크된 상태 강조 */
 .slot-item:has(input[type="checkbox"]:checked) {
   border-color: rgba(255,255,255,0.26);
   background: rgba(255,255,255,0.10);
 }
 
-/* ✅ (호환성) :has 미지원 브라우저 대비용(큰 문제는 없음)
-   - 필요하면 JS에서 .checked 클래스를 토글하는 방식으로 바꿀 수 있음 */
+/* :has 미지원 fallback */
 @supports not selector(:has(*)) {
-  /* fallback: 변화 없음(그냥 기본 디자인으로도 충분) */
+  /* fallback: 변화 없음 */
 }
 
-/* slot panel 열릴 때 */
 @keyframes slotFadeIn {
   from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -418,6 +476,11 @@ select.field-input option {
   margin-top: 12px;
 }
 
+/* ✅ 모달 열렸을 때 배경 스크롤 방지 */
+body.modal-open {
+  overflow: hidden;
+}
+
 /* =========================
    반응형(모바일) 보정
    ========================= */
@@ -425,33 +488,28 @@ select.field-input option {
   .btn { width: 100%; text-align: center; }
   .modal-actions { flex-direction: column; }
 
-  /* footer가 좁은 화면에서 너무 꽉 차면 줄바꿈 */
   .footer-nav { flex-wrap: wrap; }
-  .footer-btn { flex: 1 1 auto; }
-}
 
-@media (max-width: 420px) {
-  /* ✅ footer 자체를 얇게 */
-  .footer-nav {
-    padding: 24px 10px;         /* 12px → 8px */
-    gap: 8px;                   /* 10px → 8px */
-  }
-
-  /* ✅ 버튼을 컴팩트하게 */
   .footer-btn {
-    padding: 20px 10px;         /* 10px 12px → 8px 10px */
-    border-radius: 12px;        /* 14px → 12px */
-    font-size: 13px;            /* 글자 작게 */
-    letter-spacing: -0.2px;     /* 한글 폭 살짝 줄여 과한 느낌 완화 */
+    flex: 1 1 auto;
+    padding: 12px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    letter-spacing: -0.2px;
   }
 
-  /* ✅ 바디 하단 여백도 footer 얇아진 만큼 조정 */
   body {
-    padding-bottom: 68px;       /* 84px → 68px (대략) */
+    padding-bottom: 72px;
   }
 }
 
-/* ✅ 모달 열렸을 때 배경 스크롤 방지(선택) */
-body.modal-open {
-  overflow: hidden;
+/* ✅ 모션 줄이기(접근성) */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .footer-btn, .mini-card, .slot-item {
+    transition: none !important;
+  }
+  .modal[aria-hidden="false"] .modal-card,
+  .slot-panel {
+    animation: none !important;
+  }
 }
