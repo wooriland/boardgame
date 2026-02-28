@@ -4,13 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>wooriland-renewal</title>
-    <!-- (선택) dev에서도 아이콘 보고 싶으면 유지 -->
     <link rel="icon" type="image/svg+xml" href="/boardgame/vite.svg" />
-    <script type="module" crossorigin src="/boardgame/assets/index-BOI2tvWW.js"></script>
-    <link rel="stylesheet" crossorigin href="/boardgame/assets/index-Bgj7P74H.css">
+
+    <!-- ✅ Kakao Maps SDK (반드시 head, https 권장) -->
+    <script
+      type="text/javascript"
+      src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=80e41c77d3ff19d913994ed553dd24de&autoload=false"
+    ></script>
+    <script type="module" crossorigin src="/boardgame/assets/index-DKxcARQf.js"></script>
+    <link rel="stylesheet" crossorigin href="/boardgame/assets/index-DFwf6hVP.css">
   </head>
+
   <body>
     <div id="root"></div>
-    <!-- ✅ Vite 엔트리 -->
+    <div id="modal-root"></div>
   </body>
 </html>
