@@ -1,0 +1,798 @@
+/* ✅ 파일: src/styles/global.css */
+
+/* =========================
+   ✅ 기업형 섹션용 변수(추가)
+   ========================= */
+:root {
+  --bg: #000;
+  --panel: rgba(255,255,255,0.08);
+  --panel-strong: rgba(0,0,0,0.82);
+  --text: rgba(255,255,255,0.95);
+  --muted: rgba(255,255,255,0.75);
+  --line: rgba(255,255,255,0.14);
+  --brand: rgba(255,255,255,0.85);
+
+  --radius: 18px;
+  --radius-sm: 14px;
+  --shadow: 0 10px 30px rgba(0,0,0,0.45);
+
+  --wrap-max: 600px;
+  --wrap-max-wide: 2500px;
+
+  --container-max: 2500px;
+  --content-max: 1320px;
+
+  /* ✅ Footer 기본 폭(기본은 wide) */
+  --footer-max: 2500px;
+
+  --footer-nav-h: 84px;
+
+  /* ✅ 섹션 간격을 변수로 통일 (page-shell 여백도 동일하게 맞춤) */
+  --section-space: 34px;
+
+  /* ✅ glass 카드 테두리/라운드 “단일 소스” */
+  --glass-border-color: rgba(255,255,255,0.16);
+  --glass-border-w: 1px;
+  --glass-border: var(--glass-border-w) solid var(--glass-border-color);
+  --glass-radius: var(--radius);
+  --glass-shadow: 0 10px 30px rgba(0,0,0,0.38);
+}
+
+/* =========================
+   기본 리셋
+   ========================= */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+  padding-bottom: var(--footer-nav-h);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #000;
+}
+
+body.footer-nav-hidden {
+  padding-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  body { padding-bottom: 0; }
+}
+
+/* ✅ 모달 열렸을 때 배경 스크롤 잠금 */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* =========================
+   ✅ 배경 레이어(포스터)
+   ========================= */
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+
+  background-image: var(--poster-url);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #000;
+}
+
+.bg::before {
+  content: "";
+  position: absolute;
+  inset: -40px;
+  background-image: var(--poster-url);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  filter: blur(26px) saturate(1.05) brightness(0.75);
+  transform: scale(1.06);
+  opacity: 0.85;
+
+  z-index: -2;
+}
+
+.bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.35) 55%,
+      rgba(0,0,0,0.86) 100%
+    ),
+    linear-gradient(
+      to right,
+      rgba(0,0,0,0.92) 0%,
+      rgba(0,0,0,0.74) 18%,
+      rgba(0,0,0,0.20) 50%,
+      rgba(0,0,0,0.74) 82%,
+      rgba(0,0,0,0.92) 100%
+    );
+
+  z-index: -1;
+}
+
+@media (min-width: 1600px) {
+  .bg::after {
+    background:
+      radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.05) 0%,
+        rgba(0,0,0,0.30) 58%,
+        rgba(0,0,0,0.82) 100%
+      ),
+      linear-gradient(
+        to right,
+        rgba(0,0,0,0.90) 0%,
+        rgba(0,0,0,0.70) 20%,
+        rgba(0,0,0,0.18) 50%,
+        rgba(0,0,0,0.70) 80%,
+        rgba(0,0,0,0.90) 100%
+      );
+  }
+}
+
+/* =========================
+   콘텐츠 레이아웃
+   ========================= */
+.wrap {
+  min-height: 100vh;
+  padding: 32px 16px;
+  max-width: var(--wrap-max);
+  width: 100%;
+  margin: 0 auto;
+  padding-bottom: calc(32px + var(--footer-nav-h));
+}
+
+body.footer-nav-hidden .wrap {
+  padding-bottom: 32px;
+}
+
+@media (min-width: 900px) {
+  .wrap { padding-bottom: 32px; }
+}
+
+.wrap.wrap-wide {
+  max-width: var(--wrap-max-wide);
+}
+
+/* =========================
+   ✅ 기업형 섹션 유틸
+   ========================= */
+.section {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  padding: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  margin: 16px 0;
+}
+
+.section-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+.muted { opacity: 0.78; }
+
+/* =========================
+   버튼(공통)
+   ========================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 10px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+
+  color: #fff;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+.btn:hover { background: rgba(255,255,255,0.28); transform: translateY(-1px); }
+.btn:active { transform: translateY(0px); }
+.btn.ghost { background: transparent; }
+
+.btn.primary {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.32);
+}
+
+button.btn { font: inherit; border: 1px solid rgba(255,255,255,0.25); }
+
+button.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.14);
+  transform: none;
+}
+button.btn:disabled:hover { background: rgba(255,255,255,0.10); }
+
+:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.65);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* =========================
+   ✅ 하단 고정 Footer 메뉴
+   ========================= */
+.footer-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+
+  padding: 16px 16px;
+
+  /* ✅ footer(모바일)보다 모달이 더 위에 있어야 함 */
+  z-index: 40;
+
+  background: rgba(0,0,0,0.55);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+}
+
+@media (min-width: 900px) {
+  .footer-nav { display: none; }
+}
+
+.footer-btn {
+  font: inherit;
+  cursor: pointer;
+
+  padding: 14px 16px;
+  font-size: 15px;
+  border-radius: 14px;
+
+  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+
+  transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+}
+
+.footer-btn:hover { background: rgba(255,255,255,0.22); transform: translateY(-1px); }
+.footer-btn:active { transform: translateY(0); }
+
+.footer-btn.primary {
+  background: rgba(255,255,255,0.22);
+  border-color: rgba(255,255,255,0.30);
+}
+
+/* =========================
+   ✅ 공용 모달 UI (최상단 보장)
+   - Portal로 #modal-root에 렌더링되는 전제
+   ========================= */
+.modal {
+  position: fixed;
+  inset: 0;
+
+  /* ✅ 최상단 */
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px 12px;
+}
+
+.modal.is-open .modal-card { animation: modalPop 180ms ease-out; }
+
+@keyframes modalPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.62);
+}
+
+.modal-card {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: calc(100vh - 36px);
+  overflow: auto;
+
+  background: rgba(0,0,0,0.82);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 18px;
+  padding: 16px;
+  backdrop-filter: blur(12px);
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-card.modal-card--weekly {
+  width: min(1120px, 100%);
+}
+
+.modal-card.modal-card--aiGuide {
+  width: min(1360px, 100%);
+  max-height: calc(100vh - 24px);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.10),
+      rgba(255,255,255,0.04)
+    ),
+    rgba(4,4,4,0.88);
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow:
+    0 28px 70px rgba(0,0,0,0.42),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.weekly-modal-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 900px){
+  .weekly-modal-grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.weekly-modal-left{
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 14px;
+  align-content: start;
+}
+
+.weekly-modal-card{
+  min-height: 0;
+  align-self: start;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+  overflow: visible;
+}
+
+.weekly-modal-scroll{
+  height: auto;
+  overflow: visible;
+  padding-right: 0;
+}
+
+.weekly-modal-scroll::-webkit-scrollbar { width: 10px; }
+.weekly-modal-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.14);
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.25);
+}
+.weekly-modal-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+
+.modal-card::-webkit-scrollbar { width: 10px; }
+.modal-card::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.35);
+}
+.modal-card::-webkit-scrollbar-track { background: rgba(255,255,255,0.06); }
+
+.modal-title { margin: 0 0 12px; font-size: 18px; letter-spacing: -0.2px; }
+.modal-subtitle { margin: -6px 0 12px; font-size: 12px; opacity: 0.85; }
+
+.modal-warning {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 80, 80, 0.18);
+  border: 1px solid rgba(255, 80, 80, 0.35);
+}
+
+.modal-text { margin: 0 0 10px; line-height: 1.6; opacity: 0.95; }
+.modal-list { margin: 0 0 12px; padding-left: 18px; line-height: 1.7; opacity: 0.95; }
+
+.modal-actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   금주의 보드게임(기존 유지)
+   ========================= */
+.weekly-status {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.95;
+}
+.weekly-cards { display: grid; gap: 10px; margin: 10px 0 12px; }
+.mini-card {
+  position: relative;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 14px;
+  padding: 12px;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+}
+.mini-card:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+.mini-card-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.10);
+  opacity: 0.95;
+}
+.mini-card-title { margin: 0 0 6px; font-size: 15px; padding-right: 64px; }
+.mini-card-meta { margin: 0 0 6px; font-size: 12px; opacity: 0.85; }
+.mini-card-desc { margin: 0; opacity: 0.9; line-height: 1.45; font-size: 13px; }
+
+/* =========================
+   참여 신청 폼(기존 유지)
+   ========================= */
+.field { display: block; margin-bottom: 10px; }
+.field-label { display: block; font-size: 13px; opacity: 0.9; margin-bottom: 6px; }
+
+.field-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.20);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  outline: none;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.field-input:focus {
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.10);
+}
+.field-hint { display: block; margin-top: 6px; font-size: 12px; opacity: 0.78; line-height: 1.4; }
+
+select.field-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  padding-right: 34px;
+
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.7) 50%),
+    linear-gradient(135deg, rgba(255,255,255,0.7) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% + 1px),
+    calc(100% - 11px) calc(50% + 1px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+select.field-input option { color: #000; background: #fff; }
+
+/* =========================================================
+   ✅ 레이아웃 유틸
+   ========================================================= */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.content-max {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.footer-max {
+  width: 100%;
+  max-width: var(--footer-max);
+  margin: 0 auto;
+}
+.footer-max.is-sync {
+  max-width: var(--container-max);
+}
+
+.section-space { padding: var(--section-space) 0; }
+
+/* ✅ Hero 레이아웃 */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+@media (min-width: 1400px) {
+  .hero-grid {
+    grid-template-columns: 1.2fr 1fr;
+    gap: 22px;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (min-width: 1400px) {
+  .two-col { gap: 22px; }
+}
+
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+/* ✅ glass (단일 소스: border/radius/shadow 통일) */
+.glass {
+  background: linear-gradient(
+    to bottom right,
+    rgba(255,255,255,0.10),
+    rgba(0,0,0,0.55)
+  );
+
+  border: var(--glass-border);
+  border-radius: var(--glass-radius);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--glass-shadow);
+}
+
+.h2 { margin: 0 0 12px; font-size: 18px; letter-spacing: -0.2px; }
+
+.hero-title-2 {
+  margin: 0;
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: -0.6px;
+  line-height: 1.1;
+}
+@media (max-width: 900px) {
+  .hero-title-2 { font-size: 30px; }
+}
+
+/* =========================================================
+   ✅ 최종: page-shell + side-panel
+   ========================================================= */
+.page-shell {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(720px, 1.6fr) minmax(280px, 1fr);
+  gap: 24px;
+
+  padding: 0;
+
+  /* ✅ [수정] stretch → start : 사이드가 센터 높이를 억지로 따라가지 않게 */
+  align-items: stretch;
+
+  margin: var(--section-space) 0;
+
+  position: relative;
+  z-index: 1;
+}
+
+.center-area {
+  width: 100%;
+  min-width: 0;
+}
+
+.side-panel {
+  /* ✅ [수정] stretch + min-height 제거 : 컨텐츠 높이대로 */
+  align-self: stretch;
+  min-height: 0;
+
+  padding: 0;
+}
+
+/* ✅ 화면 좁아지면 사이드 패널 숨김 */
+@media (max-width: 1200px) {
+  .page-shell { grid-template-columns: 1fr; }
+  .side-panel { display: none; }
+}
+
+@media (max-width: 900px) {
+  .modal.modal--aiGuide {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal.modal--aiGuide .modal-backdrop {
+    background: rgba(0,0,0,0.72);
+  }
+
+  .modal-card.modal-card--aiGuide {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100dvh;
+    min-height: min(92dvh, 880px);
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 26px 26px 0 0;
+    padding: 18px 16px 24px;
+  }
+}
+
+/* 접근성: 모션 최소화 */
+@media (prefers-reduced-motion: reduce) {
+  .btn, .footer-btn, .mini-card { transition: none !important; }
+  .modal.is-open .modal-card { animation: none !important; }
+}
+
+/* =========================================================
+   ✅ [기존] 부서별 신청 현황(DeptStatsPanel) 스타일
+   ========================================================= */
+.panelHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panelHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+}
+
+.subtle {
+  opacity: 0.78;
+  font-size: 12px;
+}
+
+.deptList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.deptRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+}
+
+.deptName {
+  font-weight: 800;
+  opacity: 0.95;
+}
+
+.deptNums {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.chip {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.10);
+  opacity: 0.9;
+  font-size: 12px;
+}
+
+/* =========================================================
+   ✅ [추가] DeptStatsPanel이 쓰는 glassCard 정의
+   ========================================================= */
+.glassCard {
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.glassCard--plain {
+  padding: 0;
+}
+
+/* =========================================================
+   ✅ [수정] LEFT 패널 3분할 레이아웃 + 내부 카드
+   ========================================================= */
+
+/* ✅ [수정] 높이 강제(520px/100%) 제거 → 컨텐츠 기준 */
+.side-split {
+  display: grid;
+  /* 컨텐츠가 적으면 줄어들고, 많으면 자연히 늘어남 */
+  grid-template-rows: auto auto auto;
+  gap: 14px;
+}
+
+/* 각 칸을 "내부 카드"로 */
+.inner-card {
+  min-height: 0;
+
+  padding: 16px;
+  border-radius: var(--radius-sm);
+
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(10px);
+
+  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+
+  overflow: hidden;
+}
+
+/* ✅ [수정] scroll 컨테이너가 높이를 강제로 잡지 않도록 */
+.inner-scroll {
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+/* 내부 스크롤바 */
+.inner-scroll::-webkit-scrollbar { width: 10px; }
+.inner-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.14);
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,0.25);
+}
+.inner-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); }
+
+/* ✅ 지도 카드처럼 "스크롤 컨테이너" 안에서 맵 렌더링 꼬임 방지 */
+.inner-scroll.no-scroll {
+  overflow: visible;
+}
+
+/* ✅ 지도 컨테이너가 flex/grid/scroll 환경에서도 높이 0으로 붕괴되지 않게 보강 */
+.kakao-map-container { min-height: 180px; }
+.inner-card .kakao-map-container { display: block; }
